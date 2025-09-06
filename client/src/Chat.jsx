@@ -9,6 +9,8 @@ export default function Chat() {
     const [roomId, setRoomId] = useState('room-1');
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [typingUser, setTypingUser] = useState('');
+    const typingTimeoutRef = useRef(null);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -16,8 +18,19 @@ export default function Chat() {
             setMessages((m) => [...m, { ...data, from: 'other' }]);
         });
 
-        return () => socket.off('receive_message');
-    }, []);
+        socket.on('user_typing', (data) => {
+        if (data.username !== username) {
+            setTypingUser(data.username + ' is typing...')
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => setTypingUser(''), 5000);
+        }
+        });
+
+        return () => {
+            socket.off('receive_message');
+            socket.off('user_typing');
+        };
+    }, [username]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -26,6 +39,11 @@ export default function Chat() {
     const joinRoom = () => {
         if (!username) return alert('Enter username first');
         socket.emit('join_room', roomId);
+    };
+
+    const handleTyping = (e) => {
+        setMessage(e.target.value);
+        socket.emit('typing', { roomId, username });
     };
 
     const sendMessage = () => {
@@ -43,7 +61,7 @@ export default function Chat() {
 
     return (
         <div style={{ maxWidth: 720, margin: '20px auto', fontFamily: 'sans-serif' }}>
-        <h2>Two-User Chat (Vite + Socket.IO)</h2>
+        <h2>Two-User Chat (Typing Indicator)</h2>
 
         <div style={{ marginBottom: 12 }}>
             <input
@@ -83,12 +101,18 @@ export default function Chat() {
             <div ref={messagesEndRef} />
         </div>
 
+        {typingUser && (
+            <div style={{ fontStyle: 'italic', fontSize: 13, marginTop: 4, color: 'gray' }}>
+            {typingUser}
+            </div>
+        )}
+
         <div style={{ display: 'flex', marginTop: 12 }}>
             <input
             style={{ flex: 1, padding: 8 }}
             placeholder="Type message..."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleTyping}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
             />
             <button onClick={sendMessage} style={{ padding: '8px 12px' }}>Send</button>

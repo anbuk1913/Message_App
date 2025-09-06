@@ -30,6 +30,10 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('typing', (data) => {
+        socket.to(data.roomId).emit('user_typing', data);
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
