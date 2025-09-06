@@ -61,7 +61,7 @@ export default function Chat() {
 
     return (
         <div style={{ maxWidth: 720, margin: '20px auto', fontFamily: 'sans-serif' }}>
-        <h2>Two-User Chat (Typing Indicator)</h2>
+        <h2>Two-User Chat</h2>
 
         <div style={{ marginBottom: 12 }}>
             <input
