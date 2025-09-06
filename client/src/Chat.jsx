@@ -13,7 +13,7 @@ export default function Chat() {
 
     useEffect(() => {
         socket.on('receive_message', (data) => {
-        setMessages((m) => [...m, { ...data, from: 'other' }]);
+            setMessages((m) => [...m, { ...data, from: 'other' }]);
         });
 
         return () => socket.off('receive_message');
@@ -31,10 +31,10 @@ export default function Chat() {
     const sendMessage = () => {
         if (!message.trim()) return;
         const payload = {
-        roomId,
-        message,
-        sender: username,
-        timestamp: Date.now()
+            roomId,
+            message,
+            sender: username,
+            timestamp: Date.now()
         };
         setMessages((m) => [...m, { ...payload, from: 'me' }]);
         socket.emit('send_message', payload);
